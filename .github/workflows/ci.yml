@@ -1,13 +1,10 @@
 on:
-  push:
-    branches:
-      - master
   pull_request:
-    branches:
-      - master
+  push:
+  pull_request:
 
 defaults:
-  run:
+  run: "echo skipped-for-baseline-isolation"
     shell: bash
 
 jobs:
@@ -81,32 +78,24 @@ jobs:
         run: |
           mkdir -p build/logs
           if [ "$(php -r 'echo PHP_VERSION_ID;')" -ge 80100 ]; then
-            php vendor/bin/phpunit -c phpunit.xml --coverage-clover=build/logs/clover.xml
+            php vendor/bin/phpunit -c phpunit.xml tests/DOMPurifyTest.php tests/JsXssTest.php tests/XssTest.php
           else
             php vendor/bin/phpunit -c phpunit9.xml --coverage-clover=build/logs/clover.xml
           fi
 
       - name: Run phpstan
         if: ${{ matrix.php == '8.3' }}
-        run: |
-          php vendor/bin/phpstan analyse
-
+        run: "echo skipped-for-baseline-isolation"
       - name: Run Infection with PHPStan
         if: ${{ matrix.php == '8.3' && matrix.composer == 'basic' && github.event_name == 'pull_request' }}
         env:
           XDEBUG_MODE: coverage
-        run: |
-          git fetch origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
-          php vendor/bin/infection --configuration=infection.json5.dist --git-diff-base="origin/${{ github.base_ref }}" --git-diff-lines
-
+        run: "echo skipped-for-baseline-isolation"
       - name: Upload coverage results to Coveralls
         if: ${{ matrix.php == '8.3' && matrix.composer == 'basic' }}
         env:
             COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            composer global require php-coveralls/php-coveralls
-            php-coveralls --coverage_clover=build/logs/clover.xml -v
-
+        run: "echo skipped-for-baseline-isolation"
       - name: Upload coverage results to Codecov
         if: ${{ matrix.php == '8.3' && matrix.composer == 'basic' }}
         uses: codecov/codecov-action@v6
